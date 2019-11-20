@@ -5,6 +5,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
+@Profile("!contextTest")
 public class KafkaBookConfiguration {
 
     @Value("${kafka.bootstrap-servers}")
@@ -35,13 +37,8 @@ public class KafkaBookConfiguration {
     @Bean
     public ConsumerFactory<String, Book> consumerFactory(){
 
-        JsonDeserializer<Book> deserializer = new JsonDeserializer();
-        deserializer.setRemoveTypeHeaders(false);
-        deserializer.addTrustedPackages("*");
-        deserializer.setUseTypeMapperForKey(true);
-
         return new DefaultKafkaConsumerFactory<String, Book>(
-                consumerProps(), new StringDeserializer(), deserializer);
+                consumerProps(), new StringDeserializer(), new JsonDeserializer<>(Book.class));
     }
 
     @Bean
