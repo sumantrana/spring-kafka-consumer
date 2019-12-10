@@ -70,7 +70,7 @@ public class KafkaConsumerTest {
     public void testConsumer() throws Exception{
 
         Book book = Book.builder().name("TestRecvBook").value(20).build();
-        ProducerRecord<String, Book> producerRecord = new ProducerRecord<>(receiverTopic, book);
+        ProducerRecord<String, Book> producerRecord = new ProducerRecord<>(receiverTopic, "1234", book);
         producer.send(producerRecord);
         producer.flush();
         Thread.sleep(5000);

@@ -1,6 +1,7 @@
 package com.sumant.boot.learning.springkafkaconsumer;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -9,9 +10,11 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.listener.adapter.RecordFilterStrategy;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -20,6 +23,9 @@ public class KafkaBookConfiguration {
 
     @Value("${kafka.bootstrap-servers}")
     private String bootstrapServers;
+
+    @Value("${kafka.filterValues}")
+    private List<String> filterValues;
 
     @Bean
     public Map<String, Object> consumerProps(){
@@ -46,6 +52,23 @@ public class KafkaBookConfiguration {
 
         ConcurrentKafkaListenerContainerFactory<String, Book> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.setAckDiscarded(true);
+
+        if(true) {
+
+            factory.setRecordFilterStrategy(new RecordFilterStrategy<String, Book>() {
+
+                @Override
+                public boolean filter(ConsumerRecord<String, Book> consumerRecord) {
+
+                    if(consumerRecord.key() != null && filterValues.contains(consumerRecord.key())) {
+                        return false;
+                    }else {
+                        return true;
+                    }
+                }
+            });
+        }
 
         return factory;
     }
